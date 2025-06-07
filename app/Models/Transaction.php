@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Eloquent\Model;
+
+class Transaction extends Model
+{
+    use HasCustomId;
+
+    protected $idPrefix = 'tan-';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    protected $fillable = [
+        'amount',
+        'reference',
+    ];
+
+    public function account()
+    {
+        return $this->belongsTo(Account::class);
+    }
+
+    public function currency() 
+    {
+        return $this->hasOneThrough(
+            Currency::class,
+            Account::class,
+            'id',
+            'id',
+            'account_id',
+            'currency_id'
+        );
+    }
+}

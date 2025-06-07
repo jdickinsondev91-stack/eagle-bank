@@ -12,8 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transactions', function (Blueprint $table) {
-            $table->id();
+            $table->string('id')->primary();
+            $table->string('account_id');
+            $table->uuid('transaction_type_id');
+            $table->integer('amount');
+            $table->string('reference')->nullable();
             $table->timestamps();
+
+            $table->foreign('account_id')->references('id')->on('accounts');
+            $table->foreign('transaction_type_id')->references('id')->on('transaction_types');
         });
     }
 

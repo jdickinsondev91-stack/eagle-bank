@@ -12,8 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('addresses', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->string('user_id');
+            $table->string('line_1');
+            $table->string('line_2')->nullable();
+            $table->string('line_3')->nullable();
+            $table->string('town');
+            $table->string('county');
+            $table->string('postcode');
+            $table->boolean('is_current')->default(1);
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
