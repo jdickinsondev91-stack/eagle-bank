@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use Account;
-use Address;
-use HasCustomId;
+use App\Traits\HasCustomId;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
