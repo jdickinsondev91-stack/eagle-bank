@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\DTOs\AddressDTO;
 use App\DTOs\UserDTO;
+use App\Exceptions\HasAccountsException;
 use App\Models\User;
 use App\Repositories\Interfaces\UserRepository;
 use Illuminate\Support\Facades\DB;
@@ -44,6 +45,19 @@ class UserService
             $user = $this->userRepository->update($user, $userDTO);
 
             return $user;
+        });
+    }
+
+    public function deleteUser(string $userId): bool 
+    {
+        $user = $this->userRepository->getByIdWithAccounts($userId);
+
+        if ($user->accounts->isNotEmpty()) {
+            throw new HasAccountsException();
+        }
+
+        return DB::transaction(function () use ($user) {
+            return $this->userRepository->delete($user);
         });
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use AccountType;
+use App\Models\AccountType;
+use App\Models\Currency;
 use App\Models\User;
-use Currency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -32,4 +32,15 @@ class EloquentUserRepository implements UserRepository
 
         return $user->fresh(['currentAddress']);
     }
+
+    public function getByIdWithAccounts(string $id): User
+    {
+        return User::with('accounts')->findOrFail($id);
+    }
+
+    public function delete(User $user): bool 
+    {
+        $user->addresses()->delete();
+        return $user->delete();
+    }
 }

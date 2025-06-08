@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Account;
 use App\Models\Address;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -211,6 +212,31 @@ class UserControllerTest extends TestCase
         ]);
     }
 
+    public function testUpdateNonExistentUser(): void 
+    {
+        $nonExistentId = 'usr-nonexistent123';
+
+        $payload = [
+            'name' => 'New Name',
+            'email' => 'new@example.com',
+            'phoneNumber' => '+441234567890',
+            'address' => [
+                'line1' => '123 Main St',
+                'town' => 'Anytown',
+                'county' => 'Anycounty',
+                'postcode' => 'A1 1AA',
+            ]
+        ];
+
+        $response = $this->patchJson("/v1/users/{$nonExistentId}", $payload);
+
+        $response->assertStatus(404)
+                 ->assertJson([
+                     'status' => 404,
+                     'message' => 'User not found.'
+                 ]);
+    }
+
     public function testCanNotUpdateUsingFailedValidation(): void 
     {
         $user = User::factory()->create();
@@ -228,5 +254,48 @@ class UserControllerTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['email', 'phoneNumber', 'address.postcode']);
+    }
+
+    public function testCanDeleteUserNoAccounts(): void 
+    {
+        $user = User::factory()->create();
+        Address::factory()->count(2)->create(['user_id' => $user->id]);
+
+        $response = $this->deleteJson("/v1/users/{$user->id}");
+
+        $response->assertStatus(200)
+                 ->assertJson(['status' => 200]);
+
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+        $this->assertDatabaseMissing('addresses', ['user_id' => $user->id]);
+    }
+
+    public function testUserNotFoundDelete(): void 
+    {
+        $nonExistentId = 'usr-nonexistent123';
+
+        $response = $this->deleteJson("/v1/users/{$nonExistentId}");
+
+        $response->assertStatus(404)
+                 ->assertJson([
+                     'status' => 404,
+                     'message' => 'User not found.'
+                 ]);
+    }
+
+    public function testCanNotDeleteUserWithAccounts(): void 
+    {
+        $user = User::factory()->create();
+        Account::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->deleteJson("/v1/users/{$user->id}");
+
+        $response->assertStatus(409)
+                 ->assertJson([
+                     'status' => 409,
+                     'message' => 'User has linked accounts.'
+                 ]);
+
+        $this->assertDatabaseHas('users', ['id' => $user->id]);
     }
 }

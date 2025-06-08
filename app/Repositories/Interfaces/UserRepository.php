@@ -12,4 +12,8 @@ interface UserRepository
     public function create(UserDTO $user): User;
 
     public function update(User $user, UserDTO $userDTO): User;
+
+    public function getByIdWithAccounts(string $id): User;
+
+    public function delete(User $user): bool;
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1;
 
 use App\DTOs\AddressDTO;
 use App\DTOs\UserDTO;
+use App\Exceptions\HasAccountsException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
@@ -61,17 +62,39 @@ class UserController extends Controller
         $userDto = UserDTO::create(array_merge($request->validated(), ['id' => $userId]));
         $addressDto = AddressDTO::create($request->input('address'));
 
-        $user = $this->userService->updateUser($userDto, $addressDto);
+        try {
+            $user = $this->userService->updateUser($userDto, $addressDto);      
         
-        return response()->json([
-            'status' => Response::HTTP_OK,
-            'response' => new UserResource($user)
-        ], Response::HTTP_OK);
+            return response()->json([
+                'status' => Response::HTTP_OK,
+                'response' => new UserResource($user)
+            ], Response::HTTP_OK);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => Response::HTTP_NOT_FOUND,
+                'message' => 'User not found.'
+            ], Response::HTTP_NOT_FOUND);
+        }
     }
 
-    //ID
-    public function destroy() 
+    public function destroy(string $userId): JsonResponse 
     {
+        try {
+            $this->userService->deleteUser($userId);
 
+            return response()->json([
+                'status' => Response::HTTP_OK,
+            ], Response::HTTP_OK);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => Response::HTTP_NOT_FOUND,
+                'message' => 'User not found.'
+            ], Response::HTTP_NOT_FOUND);
+        } catch (HasAccountsException $e) {
+            return response()->json([
+                'status' => Response::HTTP_CONFLICT,
+                'message' => $e->getMessage()
+            ], Response::HTTP_CONFLICT);
+        }
     }
 }
