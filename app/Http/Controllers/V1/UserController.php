@@ -10,12 +10,16 @@ use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Services\UserService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
+    use AuthorizesRequests;
+
     public function __construct(
         private UserService $userService
     ) {}
@@ -32,6 +36,8 @@ class UserController extends Controller
         try {
             $user = $this->userService->getById($id);
 
+            $this->authorize('view', $user);
+
             return response()->json([
                 'status' => Response::HTTP_OK,
                 'response' => new UserResource($user)
@@ -41,6 +47,11 @@ class UserController extends Controller
                 'status' => Response::HTTP_NOT_FOUND,
                 'message' => 'User not found.'
             ], Response::HTTP_NOT_FOUND);
+        } catch (AuthorizationException $e) {
+            return response()->json([
+                'status' => Response::HTTP_FORBIDDEN,
+                'message' => 'Unauthorized access to user data.'
+            ], Response::HTTP_FORBIDDEN);
         }
     }
 

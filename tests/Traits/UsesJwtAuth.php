@@ -6,6 +6,8 @@ use App\Models\User;
 
 trait UsesJwtAuth
 {
+    protected $loggedInUser; 
+
     protected function authenticate(array $overrides = []): string
     {
         $password = $overrides['password'] ?? 'password';
@@ -22,6 +24,8 @@ trait UsesJwtAuth
 
         $response->assertOk();
 
+        $this->loggedInUser = $user;
+        
         return $response->json('access_token');
     }
 

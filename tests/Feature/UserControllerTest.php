@@ -15,15 +15,18 @@ class UserControllerTest extends TestCase
 
     public function testCanFetchUserById(): void 
     {
-        $user = User::factory()->create();
+        $token = $this->authenticate([
+            'email' => 'user@example.com',
+            'password' => 'password'
+        ]);
+
+        $user = $this->loggedInUser;
 
         $address = Address::factory()->create([
             'user_id' => $user->id,
             'is_current' => true
         ]);
-
-        $token = $this->authenticate();
-
+        
         $response = $this->withHeaders($this->withAuthHeader($token))
                          ->getJson("/v1/users/{$user->id}");
 
