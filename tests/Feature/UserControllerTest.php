@@ -7,10 +7,11 @@ use App\Models\Address;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tests\Traits\UsesJwtAuth;
 
 class UserControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, UsesJwtAuth;
 
     public function testCanFetchUserById(): void 
     {
@@ -21,7 +22,10 @@ class UserControllerTest extends TestCase
             'is_current' => true
         ]);
 
-        $response = $this->getJson("/v1/users/{$user->id}");
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->getJson("/v1/users/{$user->id}");
 
         $response->assertStatus(200)
                  ->assertJson([
@@ -49,7 +53,10 @@ class UserControllerTest extends TestCase
     {
         $nonExistentUserId = 'usr-nonexistent123';
 
-        $response = $this->getJson("/v1/users/{$nonExistentUserId}");
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->getJson("/v1/users/{$nonExistentUserId}");
 
         $response->assertStatus(404)
                 ->assertJson([
@@ -69,10 +76,13 @@ class UserControllerTest extends TestCase
                 "postcode" => "A1 1AA"
             ],
             "phoneNumber" => "+441234567890",
-            "email" => "user@example.com"
+            "email" => "user1@example.com"
         ];
 
-        $response = $this->postJson(route('users.store'), $payload);
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->postJson(route('users.store'), $payload);
 
         $response->assertStatus(201);
 
@@ -99,7 +109,7 @@ class UserControllerTest extends TestCase
         $response->assertJsonFragment([
             'name' => 'Test User',
             'phoneNumber' => '+441234567890',
-            'email' => 'user@example.com',
+            'email' => 'user1@example.com',
             'line1' => '123 Main St',
             'town' => 'Anytown',
             'county' => 'Anycounty',
@@ -107,7 +117,7 @@ class UserControllerTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('users', [
-            'email' => 'user@example.com',
+            'email' => 'user1@example.com',
             'name' => 'Test User',
         ]);
 
@@ -133,7 +143,10 @@ class UserControllerTest extends TestCase
             "email" => "not-an-email"
         ];
 
-        $response = $this->postJson(route('users.store'), $payload);
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->postJson(route('users.store'), $payload);
 
         $response->assertStatus(422);
 
@@ -170,7 +183,10 @@ class UserControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->putJson("/v1/users/{$user->id}", $payload);
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->putJson("/v1/users/{$user->id}", $payload);
 
         $response->assertJsonStructure([
             'status',
@@ -228,7 +244,10 @@ class UserControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->patchJson("/v1/users/{$nonExistentId}", $payload);
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->patchJson("/v1/users/{$nonExistentId}", $payload);
 
         $response->assertStatus(404)
                  ->assertJson([
@@ -250,7 +269,10 @@ class UserControllerTest extends TestCase
             ]
         ];
 
-        $response = $this->putJson("/v1/users/{$user->id}", $payload);
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->putJson("/v1/users/{$user->id}", $payload);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['email', 'phoneNumber', 'address.postcode']);
@@ -261,7 +283,10 @@ class UserControllerTest extends TestCase
         $user = User::factory()->create();
         Address::factory()->count(2)->create(['user_id' => $user->id]);
 
-        $response = $this->deleteJson("/v1/users/{$user->id}");
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->deleteJson("/v1/users/{$user->id}");
 
         $response->assertStatus(200)
                  ->assertJson(['status' => 200]);
@@ -274,7 +299,10 @@ class UserControllerTest extends TestCase
     {
         $nonExistentId = 'usr-nonexistent123';
 
-        $response = $this->deleteJson("/v1/users/{$nonExistentId}");
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->deleteJson("/v1/users/{$nonExistentId}");
 
         $response->assertStatus(404)
                  ->assertJson([
@@ -288,7 +316,10 @@ class UserControllerTest extends TestCase
         $user = User::factory()->create();
         Account::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->deleteJson("/v1/users/{$user->id}");
+        $token = $this->authenticate();
+
+        $response = $this->withHeaders($this->withAuthHeader($token))
+                         ->deleteJson("/v1/users/{$user->id}");
 
         $response->assertStatus(409)
                  ->assertJson([

@@ -43,4 +43,9 @@ class EloquentUserRepository implements UserRepository
         $user->addresses()->delete();
         return $user->delete();
     }
+
+    public function getByEmail(string $email): ?User
+    {
+        return User::where('email', $email)->first();
+    }
 }

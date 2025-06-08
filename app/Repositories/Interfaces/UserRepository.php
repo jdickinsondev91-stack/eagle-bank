@@ -16,4 +16,6 @@ interface UserRepository
     public function getByIdWithAccounts(string $id): User;
 
     public function delete(User $user): bool;
+
+    public function getByEmail(string $email): ?User;
 }

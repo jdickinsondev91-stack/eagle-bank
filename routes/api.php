@@ -1,8 +1,21 @@
 <?php
 
+use App\Http\Controllers\V1\AuthController;
 use App\Http\Controllers\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    Route::apiResource('users', UserController::class);
+    
+    // Public Auth routes
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+
+    // Protected routes
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+        // Users CRUD
+        Route::apiResource('users', UserController::class);
+    });
 });
