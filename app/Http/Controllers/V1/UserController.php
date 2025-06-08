@@ -100,7 +100,7 @@ class UserController extends Controller
     public function destroy(string $userId): JsonResponse 
     {
         try {
-            $this->authorize('update', [User::class, $userId]);
+            $this->authorize('delete', [User::class, $userId]);
 
             $this->userService->deleteUser($userId);
 
