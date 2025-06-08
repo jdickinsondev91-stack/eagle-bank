@@ -20,4 +20,19 @@ class EloquentAddressRepository implements AddressRepository
             'user_id' => $userId
         ]);
     }
+
+    public function update(Address $address, AddressDTO $addressDTO): Address 
+    {
+        $address->update([
+            'line_1' => $addressDTO->line1,
+            'line_2' => $addressDTO->line2,
+            'line_3' => $addressDTO->line3,
+            'town' => $addressDTO->town,
+            'county' => $addressDTO->county,
+            'postcode' => $addressDTO->postcode,
+            'is_current' => $addressDTO->isCurrent
+        ]);
+
+        return $address->fresh();
+    }
 }

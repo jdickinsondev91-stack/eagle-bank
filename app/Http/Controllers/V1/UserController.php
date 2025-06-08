@@ -6,6 +6,7 @@ use App\DTOs\AddressDTO;
 use App\DTOs\UserDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Services\UserService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -42,7 +43,7 @@ class UserController extends Controller
         }
     }
 
-    public function store(UserStoreRequest $request)
+    public function store(UserStoreRequest $request): JsonResponse
     {
         $userDto = UserDTO::create($request->validated());
         $addressDto = AddressDTO::create($request->input('address'));
@@ -55,10 +56,17 @@ class UserController extends Controller
         ], Response::HTTP_CREATED);
     }
 
-    //Request Object && ID
-    public function update()
+    public function update(UserUpdateRequest $request, string $userId): JsonResponse
     {
+        $userDto = UserDTO::create(array_merge($request->validated(), ['id' => $userId]));
+        $addressDto = AddressDTO::create($request->input('address'));
 
+        $user = $this->userService->updateUser($userDto, $addressDto);
+        
+        return response()->json([
+            'status' => Response::HTTP_OK,
+            'response' => new UserResource($user)
+        ], Response::HTTP_OK);
     }
 
     //ID

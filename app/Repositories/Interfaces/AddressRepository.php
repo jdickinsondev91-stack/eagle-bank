@@ -8,4 +8,6 @@ use App\Models\Address;
 interface AddressRepository 
 {
     public function create(AddressDTO $address, string $userId): Address;
+
+    public function update(Address $address, AddressDTO $addressDTO): Address;
 }

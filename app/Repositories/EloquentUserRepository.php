@@ -21,4 +21,15 @@ class EloquentUserRepository implements UserRepository
             'email' => $user->email
         ]);
     }
+
+    public function update(User $user, UserDTO $userDTO): User
+    {
+        $user->update([
+            'name' => $userDTO->name,
+            'phone_number' => $userDTO->phoneNumber,
+            'email' => $userDTO->email
+        ]);
+
+        return $user->fresh(['currentAddress']);
+    }
 }

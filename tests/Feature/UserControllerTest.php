@@ -143,4 +143,90 @@ class UserControllerTest extends TestCase
             'address.postcode',
         ]);
     }
+
+    public function testCanUpdateUser(): void 
+    {
+        $user = User::factory()->create([
+            'name' => 'Old Name',
+            'email' => 'old@example.com',
+        ]);
+
+        $address = Address::factory()->create([
+            'user_id' => $user->id,
+            'is_current' => true,
+            'line_1' => 'Old Street',
+        ]);
+
+        $payload = [
+            'name' => 'New Name',
+            'email' => 'new@example.com',
+            'phoneNumber' => '+441234567890',
+            'address' => [
+                'line1' => '123 Main St',
+                'town' => 'Anytown',
+                'county' => 'Anycounty',
+                'postcode' => 'A1 1AA',
+            ]
+        ];
+
+        $response = $this->putJson("/v1/users/{$user->id}", $payload);
+
+        $response->assertJsonStructure([
+            'status',
+            'response' => [
+                'id',
+                'name',
+                'address' => [
+                    'line1',
+                    'line2',
+                    'line3',
+                    'town',
+                    'county',
+                    'postcode',
+                ],
+                'phoneNumber',
+                'email',
+                'createdTimestamp',
+                'updatedTimestamp',
+            ],
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'name' => 'New Name',
+            'email' => 'new@example.com',
+            'line1' => '123 Main St',
+            'postcode' => 'A1 1AA',
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'name' => 'New Name',
+            'email' => 'new@example.com',
+        ]);
+
+        $this->assertDatabaseHas('addresses', [
+            'user_id' => $user->id,
+            'line_1' => '123 Main St',
+        ]);
+    }
+
+    public function testCanNotUpdateUsingFailedValidation(): void 
+    {
+        $user = User::factory()->create();
+        Address::factory()->create(['user_id' => $user->id]);
+
+        $payload = [
+            'email' => 'not-an-email',
+            'phoneNumber' => 'invalid-number',
+            'address' => [
+                'postcode' => 'NOT A VALID POSTCODE'
+            ]
+        ];
+
+        $response = $this->putJson("/v1/users/{$user->id}", $payload);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['email', 'phoneNumber', 'address.postcode']);
+    }
 }

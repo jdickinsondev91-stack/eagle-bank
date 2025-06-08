@@ -16,4 +16,9 @@ class AddressService
     {
         return $this->addressRepository->create($address, $userId);
     }
+
+    public function updateAddress(Address $address, AddressDTO $addressDTO): Address
+    {
+        return $this->addressRepository->update($address, $addressDTO);
+    }
 }

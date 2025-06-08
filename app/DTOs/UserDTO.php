@@ -4,6 +4,8 @@ namespace App\DTOs;
 
 class UserDTO 
 {
+    public ?string $id; 
+
     public string $name;
 
     public string $phoneNumber;
@@ -14,6 +16,7 @@ class UserDTO
     {
         $dto = new self();
 
+        $dto->id = $data['id'] ?? null;
         $dto->name = $data['name'];
         $dto->phoneNumber = $data['phoneNumber'];
         $dto->email = $data['email'];

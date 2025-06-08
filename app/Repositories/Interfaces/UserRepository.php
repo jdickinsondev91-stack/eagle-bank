@@ -10,4 +10,6 @@ interface UserRepository
     public function getById(string $id): User;
 
     public function create(UserDTO $user): User;
+
+    public function update(User $user, UserDTO $userDTO): User;
 }

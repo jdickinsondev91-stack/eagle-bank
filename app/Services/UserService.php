@@ -6,6 +6,7 @@ use App\DTOs\AddressDTO;
 use App\DTOs\UserDTO;
 use App\Models\User;
 use App\Repositories\Interfaces\UserRepository;
+use Illuminate\Support\Facades\DB;
 
 class UserService
 {
@@ -19,15 +20,30 @@ class UserService
         return $this->userRepository->getById($id);
     }
 
-    public function createUser(UserDTO $user, AddressDTO $address): User 
+    public function createUser(UserDTO $userDTO, AddressDTO $addressDTO): User 
     {
-        $user = $this->userRepository->create($user);
+        return DB::transaction(function () use ($userDTO, $addressDTO) {
+            $user = $this->userRepository->create($userDTO);
 
-        $address = $this->addressService->createAddress($address, $user->id);
+            $address = $this->addressService->createAddress($addressDTO, $user->id);
 
-        //Safe to assume that the address created at this point is the current address
-        $user->currentAddress = $address;
+            //Safe to assume that the address created at this point is the current address
+            $user->currentAddress = $address;
 
-        return $user;
+            return $user;
+        });
+    }
+
+    public function updateUser(UserDTO $userDTO, AddressDTO $addressDTO): User 
+    {
+        return DB::transaction(function () use ($userDTO, $addressDTO) {
+            $user = $this->userRepository->getById($userDTO->id);
+
+            $address = $this->addressService->updateAddress($user->currentAddress, $addressDTO);
+
+            $user = $this->userRepository->update($user, $userDTO);
+
+            return $user;
+        });
     }
 }
