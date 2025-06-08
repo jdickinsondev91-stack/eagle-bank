@@ -12,8 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('accounts', function (Blueprint $table) {
-            $table->id();
+            $table->string('id')->primary();
+            $table->string('user_id');
+            $table->uuid('account_type_id');
+            $table->uuid('currency_id');
+            $table->string('sort_code', 8);
+            $table->string('name');
+            $table->integer('balance')->default(0);
+            $table->integer('open')->default(1);
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('account_type_id')->references('id')->on('account_types');
+            $table->foreign('currency_id')->references('id')->on('currencies');
         });
     }
 

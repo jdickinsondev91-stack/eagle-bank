@@ -12,7 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('currencies', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->string('name');
+            $table->string('code', 3)->unique();
+            $table->string('symbol', 1);
+            $table->integer('decimal_places')->default(2);
+            $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
     }
