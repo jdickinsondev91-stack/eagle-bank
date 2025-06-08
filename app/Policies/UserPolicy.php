@@ -20,23 +20,23 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->id === $model->id;;
+        return $user->id === $model->id;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, User $model): bool
+    public function update(User $user, string $targetUserId): bool
     {
-        return $user->id === $model->id;
+        return $user->id === $targetUserId;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, User $model): bool
+    public function delete(User $user, string $targetUserId): bool
     {
-        return $user->id === $model->id;;
+        return $user->id === $targetUserId;
     }
 
     /**
@@ -44,7 +44,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return $user->id === $model->id;;
+        return $user->id === $model->id;
     }
 
     /**
@@ -52,6 +52,6 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model): bool
     {
-        return $user->id === $model->id;;
+        return $user->id === $model->id;
     }
 }

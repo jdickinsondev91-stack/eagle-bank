@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -74,6 +75,9 @@ class UserController extends Controller
         $addressDto = AddressDTO::create($request->input('address'));
 
         try {
+
+            $this->authorize('update', [User::class, $userId]);
+
             $user = $this->userService->updateUser($userDto, $addressDto);      
         
             return response()->json([
@@ -85,12 +89,19 @@ class UserController extends Controller
                 'status' => Response::HTTP_NOT_FOUND,
                 'message' => 'User not found.'
             ], Response::HTTP_NOT_FOUND);
+        } catch (AuthorizationException $e) {
+              return response()->json([
+                'status' => Response::HTTP_FORBIDDEN,
+                'message' => 'Unauthorized access to user data.'
+            ], Response::HTTP_FORBIDDEN);
         }
     }
 
     public function destroy(string $userId): JsonResponse 
     {
         try {
+            $this->authorize('update', [User::class, $userId]);
+
             $this->userService->deleteUser($userId);
 
             return response()->json([
@@ -106,6 +117,11 @@ class UserController extends Controller
                 'status' => Response::HTTP_CONFLICT,
                 'message' => $e->getMessage()
             ], Response::HTTP_CONFLICT);
+        } catch (AuthorizationException $e) {
+              return response()->json([
+                'status' => Response::HTTP_FORBIDDEN,
+                'message' => 'Unauthorized access to user data.'
+            ], Response::HTTP_FORBIDDEN);
         }
     }
 }

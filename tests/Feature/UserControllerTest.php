@@ -26,7 +26,7 @@ class UserControllerTest extends TestCase
             'user_id' => $user->id,
             'is_current' => true
         ]);
-        
+
         $response = $this->withHeaders($this->withAuthHeader($token))
                          ->getJson("/v1/users/{$user->id}");
 
@@ -163,10 +163,12 @@ class UserControllerTest extends TestCase
 
     public function testCanUpdateUser(): void 
     {
-        $user = User::factory()->create([
-            'name' => 'Old Name',
-            'email' => 'old@example.com',
+        $token = $this->authenticate([
+            'email' => 'user@example.com',
+            'password' => 'password'
         ]);
+
+        $user = $this->loggedInUser;
 
         $address = Address::factory()->create([
             'user_id' => $user->id,
@@ -186,11 +188,11 @@ class UserControllerTest extends TestCase
             ]
         ];
 
-        $token = $this->authenticate();
-
         $response = $this->withHeaders($this->withAuthHeader($token))
                          ->putJson("/v1/users/{$user->id}", $payload);
 
+        $response->assertOk();
+                    
         $response->assertJsonStructure([
             'status',
             'response' => [
@@ -211,7 +213,6 @@ class UserControllerTest extends TestCase
             ],
         ]);
 
-        $response->assertOk();
         $response->assertJsonFragment([
             'name' => 'New Name',
             'email' => 'new@example.com',
@@ -231,6 +232,11 @@ class UserControllerTest extends TestCase
         ]);
     }
 
+    /**
+     * Usually a 404 would be returned for this type of test but given the 
+     * user that is doing the update should only be able to update their own data
+     * that is why it is expected to return a 403
+     */
     public function testUpdateNonExistentUser(): void 
     {
         $nonExistentId = 'usr-nonexistent123';
@@ -252,10 +258,10 @@ class UserControllerTest extends TestCase
         $response = $this->withHeaders($this->withAuthHeader($token))
                          ->patchJson("/v1/users/{$nonExistentId}", $payload);
 
-        $response->assertStatus(404)
+        $response->assertStatus(403)
                  ->assertJson([
-                     'status' => 404,
-                     'message' => 'User not found.'
+                     'status' => 403,
+                     'message' => 'Unauthorized access to user data.'
                  ]);
     }
 
@@ -283,10 +289,14 @@ class UserControllerTest extends TestCase
 
     public function testCanDeleteUserNoAccounts(): void 
     {
-        $user = User::factory()->create();
-        Address::factory()->count(2)->create(['user_id' => $user->id]);
+         $token = $this->authenticate([
+            'email' => 'user@example.com',
+            'password' => 'password'
+        ]);
 
-        $token = $this->authenticate();
+        $user = $this->loggedInUser;
+
+        Address::factory()->count(2)->create(['user_id' => $user->id]);
 
         $response = $this->withHeaders($this->withAuthHeader($token))
                          ->deleteJson("/v1/users/{$user->id}");
@@ -307,19 +317,23 @@ class UserControllerTest extends TestCase
         $response = $this->withHeaders($this->withAuthHeader($token))
                          ->deleteJson("/v1/users/{$nonExistentId}");
 
-        $response->assertStatus(404)
+        $response->assertStatus(403)
                  ->assertJson([
-                     'status' => 404,
-                     'message' => 'User not found.'
+                     'status' => 403,
+                     'message' => 'Unauthorized access to user data.'
                  ]);
     }
 
     public function testCanNotDeleteUserWithAccounts(): void 
     {
-        $user = User::factory()->create();
-        Account::factory()->create(['user_id' => $user->id]);
+         $token = $this->authenticate([
+            'email' => 'user@example.com',
+            'password' => 'password'
+        ]);
 
-        $token = $this->authenticate();
+        $user = $this->loggedInUser;
+
+        Account::factory()->create(['user_id' => $user->id]);
 
         $response = $this->withHeaders($this->withAuthHeader($token))
                          ->deleteJson("/v1/users/{$user->id}");
