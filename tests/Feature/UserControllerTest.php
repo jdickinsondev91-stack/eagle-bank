@@ -27,7 +27,7 @@ class UserControllerTest extends TestCase
                      'status' => 200,
                      'response' => [
                          'id' => $user->id,
-                         'name' => $user->first_name . ' ' . $user->last_name,
+                         'name' => $user->name,
                          'email' => $user->email,
                          'phoneNumber' => $user->phone_number,
                          'address' => [
@@ -42,5 +42,105 @@ class UserControllerTest extends TestCase
                          'updatedTimestamp' => $user->updated_at->format('Y-m-d\TH:i:s.u'),
                      ]
                  ]);
+    }
+
+    public function testFetchNonExistentUser(): void 
+    {
+        $nonExistentUserId = 'usr-nonexistent123';
+
+        $response = $this->getJson("/v1/users/{$nonExistentUserId}");
+
+        $response->assertStatus(404)
+                ->assertJson([
+                    'status' => 404,
+                    'message' => 'User not found.'
+                ]);
+    }
+
+    public function testCanCreateUser(): void 
+    {
+        $payload = [
+            "name" => "Test User",
+            "address" => [
+                "line1" => "123 Main St",
+                "town" => "Anytown",
+                "county" => "Anycounty",
+                "postcode" => "A1 1AA"
+            ],
+            "phoneNumber" => "+441234567890",
+            "email" => "user@example.com"
+        ];
+
+        $response = $this->postJson(route('users.store'), $payload);
+
+        $response->assertStatus(201);
+
+        $response->assertJsonStructure([
+            'status',
+            'response' => [
+                'id',
+                'name',
+                'address' => [
+                    'line1',
+                    'line2',
+                    'line3',
+                    'town',
+                    'county',
+                    'postcode',
+                ],
+                'phoneNumber',
+                'email',
+                'createdTimestamp',
+                'updatedTimestamp',
+            ],
+        ]);
+
+        $response->assertJsonFragment([
+            'name' => 'Test User',
+            'phoneNumber' => '+441234567890',
+            'email' => 'user@example.com',
+            'line1' => '123 Main St',
+            'town' => 'Anytown',
+            'county' => 'Anycounty',
+            'postcode' => 'A1 1AA',
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'user@example.com',
+            'name' => 'Test User',
+        ]);
+
+        $this->assertDatabaseHas('addresses', [
+            'line_1' => '123 Main St',
+            'town' => 'Anytown',
+            'county' => 'Anycounty',
+            'postcode' => 'A1 1AA',
+        ]);
+    }
+
+    public function testCanNotCreateUsingFailedValidation(): void
+    {
+        $payload = [
+            "name" => "",
+            "address" => [
+                "line1" => "123 Main St",
+                "town" => "Anytown",
+                "county" => "Anycounty",
+                "postcode" => "INVALID"
+            ],
+            "phoneNumber" => "123456",
+            "email" => "not-an-email"
+        ];
+
+        $response = $this->postJson(route('users.store'), $payload);
+
+        $response->assertStatus(422);
+
+        $response->assertJsonValidationErrors([
+            'name',
+            'email',
+            'phoneNumber',
+            'address.postcode',
+        ]);
     }
 }

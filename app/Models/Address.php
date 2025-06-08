@@ -15,6 +15,7 @@ class Address extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'user_id',
         'line_1',
         'line_2',
         'line_3',
