@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountStoreRequest;
 use App\Http\Requests\AccountUpdateRequest;
 use App\Http\Resources\AccountResource;
-use App\Services\AccountService;
+use App\Services\Accounts\AccountService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;

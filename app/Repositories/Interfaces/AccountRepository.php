@@ -4,7 +4,6 @@ namespace App\Repositories\Interfaces;
 
 use App\DTOs\AccountDTO;
 use App\Models\Account;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
 interface AccountRepository
@@ -18,4 +17,6 @@ interface AccountRepository
     public function getByUserId(string $userId): Collection;
 
     public function delete(string $accountId): bool;
+
+    public function updateBalance(Account $account, int $newBalance): Account;
 }

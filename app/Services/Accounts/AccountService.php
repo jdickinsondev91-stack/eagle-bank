@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Services;
+namespace App\Services\Accounts;
 
 use App\DTOs\AccountDTO;
 use App\Helpers\SortCodeHelper;
@@ -51,5 +51,10 @@ class AccountService
     {
         $account = $this->accountRepository->getById($accountId);
         return $this->accountRepository->update($account, $accountDTO);
+    }
+
+    public function updateBalance(Account $account, int $newBalance): Account
+    {
+        return $this->accountRepository->updateBalance($account, $newBalance);
     }
 }

@@ -20,7 +20,7 @@ class EloquentAccountRepository implements AccountRepository
             'open' => $account->open
         ]);
 
-        return $account->load(['currency', 'account_type']);
+        return $account->load(['currency', 'accountType']);
     }
 
     public function update(Account $account, AccountDTO $accountDTO): Account
@@ -34,7 +34,7 @@ class EloquentAccountRepository implements AccountRepository
             'open' => $accountDTO->open
         ]);
 
-        return $account->fresh(['currency', 'account_type']);
+        return $account->fresh(['currency', 'accountType']);
     }
 
     public function delete(string $accountId): bool
@@ -47,11 +47,18 @@ class EloquentAccountRepository implements AccountRepository
 
     public function getById(string $accountId): Account
     {
-        return Account::with(['currency', 'account_type'])->findOrFail($accountId);
+        return Account::with(['currency', 'accountType'])->findOrFail($accountId);
     }
 
     public function getByUserId(string $userId): Collection
     {
-        return Account::with(['currency', 'account_type'])->where('user_id', $userId)->get();
+        return Account::with(['currency', 'accountType'])->where('user_id', $userId)->get();
+    }
+
+    public function updateBalance(Account $account, int $newBalance): Account
+    {
+        $account->update(['balance', $newBalance]);
+
+        return $account->fresh(['currency', 'accountType']);
     }
 }

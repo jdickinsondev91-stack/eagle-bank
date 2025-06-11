@@ -15,6 +15,8 @@ class Transaction extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'account_id',
+        'transaction_type_id',
         'amount',
         'reference',
     ];
@@ -34,5 +36,10 @@ class Transaction extends Model
             'account_id',
             'currency_id'
         );
+    }
+
+    public function transactionType()
+    {
+        return $this->belongsTo(TransactionType::class);
     }
 }
