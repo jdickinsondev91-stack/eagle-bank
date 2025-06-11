@@ -25,12 +25,12 @@ class AccountDTO
         $dto = new self();
 
         $dto->id = $data['id'] ?? null;
-        $dto->userId = $data['userId'];
+        $dto->userId = $data['userId'] ?? null;
         $dto->accountTypeId = $data['account_type_id'] ?? null;
         $dto->currencyId = $data['currency_id'] ?? null;
-        $dto->sortCode = $data['sort_code'];
+        $dto->sortCode = $data['sort_code'] ?? null;
         $dto->name = $data['name'];
-        $dto->balance = $data['balance'];
+        $dto->balance = $data['balance'] ?? 0;
         $dto->open = $data['open'] ?? true;
 
         return $dto;

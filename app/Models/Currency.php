@@ -10,6 +10,8 @@ class Currency extends Model
 {
     use HasUuid, HasFactory;
 
+    public const DEFAULT_CURRENCY_CODE = 'GBP';
+    
     public $incrementing = false;
     protected $keyType = 'string';
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\V1\AccountController;
 use App\Http\Controllers\V1\AuthController;
 use App\Http\Controllers\V1\UserController;
 use Illuminate\Support\Facades\Route;
@@ -17,5 +18,8 @@ Route::prefix('v1')->group(function () {
 
         // Users CRUD
         Route::apiResource('users', UserController::class);
+
+        //Accounts CRUD
+        Route::apiResource('accounts', AccountController::class);
     });
 });
