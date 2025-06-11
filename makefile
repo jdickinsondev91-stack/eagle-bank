@@ -62,3 +62,7 @@ psql:
 # Run PHP tests
 test:
 	$(ARTISAN) test
+
+# Generate JWT Token
+jwt:
+	$(ARTISAN) jwt:secret
