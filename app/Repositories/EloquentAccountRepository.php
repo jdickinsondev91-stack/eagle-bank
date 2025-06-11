@@ -57,7 +57,7 @@ class EloquentAccountRepository implements AccountRepository
 
     public function updateBalance(Account $account, int $newBalance): Account
     {
-        $account->update(['balance', $newBalance]);
+        $account->update(['balance' => $newBalance]);
 
         return $account->fresh(['currency', 'accountType']);
     }

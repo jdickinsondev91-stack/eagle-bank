@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\DTOs\TransactionDTO;
+use App\Exceptions\InsufficientFundsException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TransactionStoreRequest;
 use App\Http\Resources\TransactionResource;
@@ -18,14 +19,22 @@ class TransactionController extends Controller
 
     public function store(TransactionStoreRequest $request, string $accountId): JsonResponse
     {
-        $transaction = $this->transactionService->createTransaction(
-            TransactionDTO::createFromRequestArray($request->validated()),
-            $accountId
-        );
-        
-        return response()->json([
-            'status' => Response::HTTP_CREATED,
-            'response' => new TransactionResource($transaction)
-        ], Response::HTTP_CREATED);
+        try {
+            $transaction = $this->transactionService->createTransaction(
+                TransactionDTO::createFromRequestArray($request->validated()),
+                $accountId
+            );
+
+            return response()->json([
+                'status' => Response::HTTP_CREATED,
+                'response' => new TransactionResource($transaction)
+            ], Response::HTTP_CREATED);
+            
+        } catch (InsufficientFundsException $e) {
+            return response()->json([
+                'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'message' => $e->getMessage()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
     }
 }
